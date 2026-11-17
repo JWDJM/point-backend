@@ -1,6 +1,7 @@
 package com.pointplatform.monolith.point.api;
 
 import com.pointplatform.monolith.common.error.ApiResponse;
+import com.pointplatform.monolith.common.security.LoginUser;
 import com.pointplatform.monolith.point.application.PointService;
 import com.pointplatform.monolith.point.domain.LedgerEntry;
 import jakarta.validation.Valid;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** X-User-Id 헤더는 로컬 개발용 임시 인증 (TODO: JWT) */
+/** 사용자는 JWT(sub) 로 식별한다 (@LoginUser) */
 @RestController
 @RequestMapping("/api/points")
 public class PointController {
@@ -22,17 +23,17 @@ public class PointController {
     }
 
     @GetMapping("/balance")
-    public ApiResponse<BalanceResponse> balance(@RequestHeader("X-User-Id") long userId) {
+    public ApiResponse<BalanceResponse> balance(@LoginUser long userId) {
         return ApiResponse.ok(new BalanceResponse(pointService.getBalance(userId)));
     }
 
     @GetMapping("/history")
-    public ApiResponse<List<LedgerEntry>> history(@RequestHeader("X-User-Id") long userId) {
+    public ApiResponse<List<LedgerEntry>> history(@LoginUser long userId) {
         return ApiResponse.ok(pointService.getHistory(userId));
     }
 
     @PostMapping("/use")
-    public ApiResponse<BalanceResponse> use(@RequestHeader("X-User-Id") long userId,
+    public ApiResponse<BalanceResponse> use(@LoginUser long userId,
                                             @RequestHeader("Idempotency-Key") String idempotencyKey,
                                             @Valid @RequestBody UsePointRequest request) {
         long balance = pointService.use(userId, request.amount(), idempotencyKey, request.merchantRef());

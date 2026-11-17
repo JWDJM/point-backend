@@ -1,25 +1,52 @@
 package com.pointplatform.monolith.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pointplatform.monolith.common.error.ApiResponse;
+import com.pointplatform.monolith.common.error.ErrorCode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * 임시 보안 설정: 모든 요청 허용.
- * 사용자 식별은 X-User-Id 헤더로 대신한다 (로컬 개발 전용).
- * TODO(#이슈): JWT 로그인/검증 도입 후 X-User-Id 제거
+ * 인증: {@code Authorization: Bearer <JWT>} (RS256, common.security.JwtKeyConfig).
+ * 공개 경로: /api/auth/** (가입·로그인·재발급·로그아웃·JWKS), /api/system/** (운영 검증, OPS_API_ENABLED 로 제어), actuator.
  */
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
+        AuthenticationEntryPoint unauthorized = (request, response, e) -> {
+            response.setStatus(ErrorCode.UNAUTHORIZED.status().value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            objectMapper.writeValue(response.getWriter(), ApiResponse.error(ErrorCode.UNAUTHORIZED));
+        };
         return http
+                // CSRF: 상태 변경 API 는 Bearer 헤더로만 인증. 쿠키(refresh)는 /api/auth 경로 전용 + SameSite=Strict
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**", "/api/system/**", "/actuator/**", "/error").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(o -> o
+                        .bearerTokenResolver(ignoreOnAuthEndpoints())
+                        .jwt(Customizer.withDefaults())
+                        .authenticationEntryPoint(unauthorized))
+                .exceptionHandling(e -> e.authenticationEntryPoint(unauthorized))
                 .build();
+    }
+
+    /** 만료된 access token 이 붙어 와도 로그인·재발급이 401 로 막히지 않도록 /api/auth/** 에서는 Bearer 를 읽지 않는다 */
+    private static BearerTokenResolver ignoreOnAuthEndpoints() {
+        DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
+        return request -> request.getRequestURI().startsWith("/api/auth/") ? null : delegate.resolve(request);
     }
 }
