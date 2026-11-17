@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * 인증: {@code Authorization: Bearer <JWT>} (RS256, common.security.JwtKeyConfig).
  * 공개 경로: /api/auth/** (가입·로그인·재발급·로그아웃·JWKS), /api/health (이용 가능 여부), /api/system/** (운영 검증, OPS_API_ENABLED 로 제어), actuator.
+ * /api/admin/** 는 JWT 가 아니라 X-Admin-Token 으로 확인한다 (common.security.AdminApiGuard — 운영 Job·런북 전용).
  */
 @Configuration
 public class SecurityConfig {
@@ -34,7 +35,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/health", "/api/system/**", "/actuator/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/health", "/api/system/**", "/api/admin/**", "/actuator/**", "/error").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o
                         .bearerTokenResolver(ignoreOnAuthEndpoints())
