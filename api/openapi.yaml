@@ -149,6 +149,14 @@ paths:
         - { in: query, name: amount, required: false, schema: { type: integer, format: int64, default: 500 } }
       responses:
         "200": { description: 초기화 후 현황, content: { application/json: { schema: { $ref: "#/components/schemas/EventStatusResponse" } } } }
+  /api/health:
+    get:
+      tags: [ops]
+      summary: "서비스 이용 가능 여부 (인증 불필요, OPS_API_ENABLED 와 무관하게 항상 켜짐). 프론트 점검 화면 판단·회복 확인용"
+      security: []
+      responses:
+        "200": { description: "이용 가능 (data.status=UP)", content: { application/json: { schema: { $ref: "#/components/schemas/HealthResponse" } } } }
+        "503": { description: "DB 등 핵심 구성요소 불가 (code=SERVICE_UNAVAILABLE)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /api/system/info:
     get:
       tags: [ops]
@@ -257,6 +265,14 @@ components:
             tokenType: { type: string, enum: [Bearer] }
             expiresIn: { type: integer, format: int64, description: "access token 남은 수명(초)" }
             user: { $ref: "#/components/schemas/UserProfile" }
+    HealthResponse:
+      type: object
+      properties:
+        code: { type: string }
+        data:
+          type: object
+          properties:
+            status: { type: string, enum: [UP] }
     BalanceResponse:
       type: object
       properties:
