@@ -114,7 +114,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/QuizAnswerRequest" }
       responses:
-        "202": { description: "당첨 (code=WON, 지급 예정 — 이벤트 종료 후 일괄 정산으로 지급, ADR-0017)", content: { application/json: { schema: { $ref: "#/components/schemas/ResultResponse" } } } }
+        "202": { description: "당첨 (code=WON, 지급 예정 — 원장 반영은 비동기)", content: { application/json: { schema: { $ref: "#/components/schemas/ResultResponse" } } } }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "200": { description: "낙첨 (code=LOST)", content: { application/json: { schema: { $ref: "#/components/schemas/ResultResponse" } } } }
         "409": { description: "중복 참여 (code=DUPLICATE)", content: { application/json: { schema: { $ref: "#/components/schemas/ResultResponse" } } } }
@@ -149,31 +149,6 @@ paths:
         - { in: query, name: amount, required: false, schema: { type: integer, format: int64, default: 500 } }
       responses:
         "200": { description: 초기화 후 현황, content: { application/json: { schema: { $ref: "#/components/schemas/EventStatusResponse" } } } }
-  /api/admin/events/{eventId}/settlement:
-    parameters:
-      - { in: path, name: eventId, required: true, schema: { type: string, maxLength: 100 } }
-      - { in: header, name: X-Admin-Token, required: true, schema: { type: string }, description: "ADMIN_API_TOKEN (운영 Job·DR 런북 전용)" }
-    get:
-      tags: [admin]
-      summary: "퀴즈 이벤트 정산 현황 (DR 판정 기준과 동일: NOT_SETTLED / COMPLETE / INCOMPLETE)"
-      security: []
-      responses:
-        "200": { description: 현황, content: { application/json: { schema: { $ref: "#/components/schemas/SettlementStatusResponse" } } } }
-        "403": { description: "관리자 토큰 없음·불일치 (code=FORBIDDEN)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-    post:
-      tags: [admin]
-      summary: "퀴즈 이벤트 일괄 정산 (한 트랜잭션, 멱등). 이미 정산된 이벤트면 원장에 없는 대기 건만 채운다 (DR 재정산)"
-      security: []
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/SettleRequest" }
-      responses:
-        "200": { description: 정산 결과, content: { application/json: { schema: { $ref: "#/components/schemas/SettlementResultResponse" } } } }
-        "400": { description: "최초 정산인데 expectedCount 없음 (code=INVALID_REQUEST)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "403": { description: "관리자 토큰 없음·불일치 (code=FORBIDDEN)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
-        "409": { description: "대기 건수 ≠ expectedCount — Kafka 반영 중인 당첨이 남음, 잠시 후 재시도 (code=SETTLEMENT_NOT_READY)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /api/health:
     get:
       tags: [ops]
@@ -342,41 +317,6 @@ components:
       type: object
       properties:
         code: { type: string, enum: [ATTENDED, ALREADY_ATTENDED] }
-    SettleRequest:
-      type: object
-      properties:
-        expectedCount: { type: integer, format: int64, minimum: 0, description: "최초 정산 시 필수: event-service 당첨자 수 (Redis SCARD event:{id}:winners)" }
-    SettlementResultResponse:
-      type: object
-      properties:
-        code: { type: string }
-        data:
-          type: object
-          required: [eventId, rowCount, totalAmount, appliedNow, repaired, settledAt]
-          properties:
-            eventId: { type: string }
-            rowCount: { type: integer, format: int64, description: "정산 대상 건수 (최초 정산 시 확정)" }
-            totalAmount: { type: integer, format: int64 }
-            appliedNow: { type: integer, format: int64, description: "이번 호출로 새로 원장에 들어간 건수 (재실행이면 0)" }
-            repaired: { type: boolean, description: "이미 정산된 이벤트의 누락분을 채운 호출이면 true" }
-            settledAt: { type: string, format: date-time }
-    SettlementStatusResponse:
-      type: object
-      properties:
-        code: { type: string }
-        data:
-          type: object
-          required: [eventId, state, pendingCount, pendingAmount, ledgerCount, unappliedCount]
-          properties:
-            eventId: { type: string }
-            state: { type: string, enum: [NOT_SETTLED, COMPLETE, INCOMPLETE] }
-            pendingCount: { type: integer, format: int64 }
-            pendingAmount: { type: integer, format: int64 }
-            ledgerCount: { type: integer, format: int64, description: "이 이벤트로 원장에 적립된 건수" }
-            unappliedCount: { type: integer, format: int64, description: "원장에 아직 없는 대기 건수" }
-            settledRowCount: { type: integer, format: int64, nullable: true }
-            settledTotalAmount: { type: integer, format: int64, nullable: true }
-            settledAt: { type: string, format: date-time, nullable: true }
     ErrorResponse:
       type: object
       properties:
