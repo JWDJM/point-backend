@@ -215,14 +215,14 @@ Spring Boot 백엔드. `monolith`(user/asset/point/cs, :8080)와 `event-service`
 
 ## API 계약 / 이벤트 스키마
 - `api/openapi.yaml`, `api/events/` 는 **프론트엔드와의 계약**이다. 변경 시 **같은 PR**에서 구현과 계약을 함께 수정하고, 하위 호환이 깨지면 `breaking-change` 라벨 + `point-frontend` 연계 PR을 PR 본문에 적는다.
-- Kafka 이벤트 스키마 변경은 소비자(원장 반영·정산)의 멱등 처리에 영향을 주는지 먼저 확인한다.
+- Kafka 이벤트 스키마 변경은 소비자(원장 반영)의 멱등 처리에 영향을 주는지 먼저 확인한다.
 
 ## 모듈 경계
 - `event-service` 는 `monolith` 코드를 직접 참조하지 않는다. 인증은 JWT 공개키(`JWT_PUBLIC_KEY` / `JWT_JWK_SET_URI`)로 **자체 검증**한다.
-- 포인트 원장은 append-only. 정산·보정도 새 행 추가로만 처리한다 (공통 규칙 §4).
+- 포인트 원장은 append-only. 보정도 새 행 추가로만 처리한다 (공통 규칙 §4).
 
 ## 설정 / 시크릿
-- JWT 키, `ADMIN_API_TOKEN` 등 시크릿은 환경 변수로만 주입한다. `local` 프로필의 데모 값(`local-admin-token` 등)을 다른 프로필에 복사하지 않는다.
+- JWT 키, 관리자 API 토큰(`app.admin.api-token`, 헤더 `X-Admin-Token`, `/api/admin/**`) 등 시크릿은 환경 변수로만 주입한다. `local` 프로필의 데모 값을 다른 프로필에 복사하지 않는다.
 - 운영·인프라 검증 API(`/api/system/**`, `/api/events/system/**`)는 `OPS_API_ENABLED` 로 끌 수 있어야 한다.
 
 ## 배포
