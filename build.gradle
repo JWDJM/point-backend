@@ -17,6 +17,11 @@ subprojects {
     // Docker Engine 29 이상(최소 API 상향)에서 "Could not find a valid Docker environment" 로 실패한다
     ext['testcontainers.version'] = '1.21.4'
 
+    // CI Trivy 스캔 CRITICAL 대응 (#10). Spring Boot 3.5.16(3.5 최신 패치)의 BOM 이 아직 취약 버전을 쓴다
+    // → 같은 마이너 라인의 최신 패치로 올린다. Boot 가 이 버전 이상을 관리하게 되면 두 줄을 지운다
+    ext['tomcat.version'] = '10.1.62'        // 10.1.55: CVE-2026-55276, 65182, 65637, 65905, 68525
+    ext['netty.version'] = '4.1.141.Final'   // 4.1.135: CVE-2026-75595 (Lettuce → netty-handler)
+
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-actuator'
