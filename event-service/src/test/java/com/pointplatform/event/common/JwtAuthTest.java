@@ -8,8 +8,8 @@ import com.pointplatform.event.attendance.AttendanceResult;
 import com.pointplatform.event.attendance.AttendanceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -54,7 +54,7 @@ class JwtAuthTest {
     }
 
     @Autowired MockMvc mvc;
-    @MockBean AttendanceService attendanceService;
+    @MockitoBean AttendanceService attendanceService;
 
     @Test
     void 유효한_토큰이면_sub_를_사용자_id_로_쓴다() throws Exception {
