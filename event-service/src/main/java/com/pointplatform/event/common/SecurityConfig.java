@@ -22,10 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 
 /**
- * JWT 자체 검증 (monolith 가 RS256 으로 서명, hybrid-msa.md §4) — 요청마다 monolith 를 호출하지 않는다.
+ * JWT 자체 검증 (core-service 가 RS256 으로 서명, hybrid-msa.md §4) — 요청마다 core-service 를 호출하지 않는다.
  * <ul>
  *   <li>운영: app.auth.public-key (JWT_PUBLIC_KEY, X.509 PEM)</li>
- *   <li>local: app.auth.jwk-set-uri → monolith /api/auth/jwks.json (임시 키, 받아온 키는 캐시)</li>
+ *   <li>local: app.auth.jwk-set-uri → core-service /api/auth/jwks.json (임시 키, 받아온 키는 캐시)</li>
  * </ul>
  * 공개 경로: 운영 검증 API, local 전용 이벤트 현황/열기, actuator.
  */

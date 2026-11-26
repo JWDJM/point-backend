@@ -36,21 +36,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** monolith 가 서명한 JWT 를 공개키만으로 검증하고 sub 를 사용자 id 로 쓴다 */
+/** core-service 가 서명한 JWT 를 공개키만으로 검증하고 sub 를 사용자 id 로 쓴다 */
 @WebMvcTest(AttendanceController.class)
 @Import({SecurityConfig.class, LoginUserArgumentResolver.class})
 class JwtAuthTest {
 
-    static final KeyPair MONOLITH_KEY = rsa();
+    static final KeyPair CORE_SERVICE_KEY = rsa();
     static final KeyPair OTHER_KEY = rsa();
 
     @DynamicPropertySource
     static void auth(DynamicPropertyRegistry registry) {
         String pem = "-----BEGIN PUBLIC KEY-----\n"
-                + Base64.getMimeEncoder().encodeToString(MONOLITH_KEY.getPublic().getEncoded())
+                + Base64.getMimeEncoder().encodeToString(CORE_SERVICE_KEY.getPublic().getEncoded())
                 + "\n-----END PUBLIC KEY-----\n";
         registry.add("app.auth.public-key", () -> pem);
-        registry.add("app.auth.issuer", () -> "point-monolith");
+        registry.add("app.auth.issuer", () -> "point-core");
     }
 
     @Autowired MockMvc mvc;
@@ -59,7 +59,7 @@ class JwtAuthTest {
     @Test
     void 유효한_토큰이면_sub_를_사용자_id_로_쓴다() throws Exception {
         when(attendanceService.check(42L)).thenReturn(AttendanceResult.ATTENDED);
-        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(MONOLITH_KEY, "point-monolith", 600)))
+        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(CORE_SERVICE_KEY, "point-core", 600)))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.code").value("ATTENDED"));
         verify(attendanceService).check(42L);
@@ -72,11 +72,11 @@ class JwtAuthTest {
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
         mvc.perform(post("/api/events/attendance").header("X-User-Id", "1"))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(OTHER_KEY, "point-monolith", 600)))
+        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(OTHER_KEY, "point-core", 600)))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(MONOLITH_KEY, "someone-else", 600)))
+        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(CORE_SERVICE_KEY, "someone-else", 600)))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(MONOLITH_KEY, "point-monolith", -600)))
+        mvc.perform(post("/api/events/attendance").header("Authorization", "Bearer " + token(CORE_SERVICE_KEY, "point-core", -600)))
                 .andExpect(status().isUnauthorized());
         verify(attendanceService, never()).check(anyLong());
     }

@@ -1,4 +1,4 @@
-.PHONY: local-up local-down run-monolith run-event test
+.PHONY: local-up local-down run-core run-event test
 
 local-up:
 	docker compose up -d
@@ -6,8 +6,8 @@ local-up:
 local-down:
 	docker compose down
 
-run-monolith:
-	./gradlew :monolith:bootRun
+run-core:
+	./gradlew :core-service:bootRun
 
 run-event:
 	./gradlew :event-service:bootRun

@@ -4,7 +4,7 @@
 
 | 모듈 | 역할 | 포트 | DR 배포 |
 |---|---|---|---|
-| `monolith` | user / asset / point / cs | 8080 | ✅ |
+| `core-service` | user / asset / point / cs | 8080 | ✅ |
 | `event-service` | 출석·퀴즈·대기열 (Redis + Kafka) | 8081 | ❌ (DR 시 점검) |
 
 - 설계 문서·ADR: [point-infra/docs](https://github.com/ZZGG2/point-infra/tree/main/docs)
@@ -14,7 +14,7 @@
 상세 가이드 (Windows, 데모 시나리오 포함): 상위 폴더의 `LOCAL-DEV.md`
 ```bash
 docker compose up -d                      # PostgreSQL, Redis, Kafka
-./gradlew :monolith:bootRun               # :8080  (Windows: .\gradlew.bat)
+./gradlew :core-service:bootRun               # :8080  (Windows: .\gradlew.bat)
 ./gradlew :event-service:bootRun          # :8081
 ```
 
@@ -33,11 +33,11 @@ docker compose up -d                      # PostgreSQL, Redis, Kafka
 ## 인증 설정
 | 환경변수 | 서비스 | 설명 |
 |---|---|---|
-| `JWT_PRIVATE_KEY` | monolith | RS256 서명 키 (PKCS#8 PEM). **local 외 프로필은 필수** — local 에서 비우면 임시 키 생성 |
+| `JWT_PRIVATE_KEY` | core-service | RS256 서명 키 (PKCS#8 PEM). **local 외 프로필은 필수** — local 에서 비우면 임시 키 생성 |
 | `JWT_PUBLIC_KEY` | event-service | 위 키의 공개키 (X.509 PEM). 운영은 이것으로 검증 |
-| `JWT_JWK_SET_URI` | event-service | local 기본값 `http://localhost:8080/api/auth/jwks.json` (monolith 임시 키 조회) |
-| `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | monolith | 기본 15m / 14d |
-| `AUTH_COOKIE_SECURE` | monolith | refresh 쿠키 Secure (기본 true, local 프로필은 false) |
+| `JWT_JWK_SET_URI` | event-service | local 기본값 `http://localhost:8080/api/auth/jwks.json` (core-service 임시 키 조회) |
+| `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | core-service | 기본 15m / 14d |
+| `AUTH_COOKIE_SECURE` | core-service | refresh 쿠키 Secure (기본 true, local 프로필은 false) |
 
 키 생성 예: `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt.pem` → 공개키 `openssl pkey -in jwt.pem -pubout`
 
