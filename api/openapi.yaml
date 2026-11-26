@@ -132,7 +132,7 @@ paths:
   /api/events/{eventId}/status:
     get:
       tags: [event]
-      summary: "이벤트 현황 (local 프로필 전용 — 운영에서는 404)"
+      summary: "이벤트 현황 (인증 없음). 없는 id 면 open=false, 수치 0"
       security: []
       parameters:
         - { in: path, name: eventId, required: true, schema: { type: string } }
@@ -141,7 +141,7 @@ paths:
   /api/events/{eventId}/open:
     post:
       tags: [event]
-      summary: "이벤트 열기/초기화 (local 프로필 전용)"
+      summary: "이벤트 열기/초기화 (local 프로필 전용 — 운영에서는 404). 참여자·당첨자를 지우고 마감 없이 다시 연다. 운영 생성은 POST /api/events/admin/{eventId}"
       security: []
       parameters:
         - { in: path, name: eventId, required: true, schema: { type: string } }
@@ -149,6 +149,24 @@ paths:
         - { in: query, name: amount, required: false, schema: { type: integer, format: int64, default: 500 } }
       responses:
         "200": { description: 초기화 후 현황, content: { application/json: { schema: { $ref: "#/components/schemas/EventStatusResponse" } } } }
+  /api/events/admin/{eventId}:
+    post:
+      tags: [event]
+      summary: "운영용 이벤트 생성 (X-Admin-Token, event-day 런북 전용 — 프론트에서 호출하지 않는다)"
+      description: |
+        - 한 번 쓴 eventId 는 다시 쓸 수 없다 (409). 같은 id 를 다시 열면 멱등키(eventId:userId)가 겹쳐 새 당첨이 원장에서 무시되기 때문
+        - endsAt 이 지나면 참여 마감 (answers → 410 CLOSED). 이벤트 키는 endsAt + 1일에 만료 (ADR-0007), 보상 Stream 은 만료되지 않는다 (ADR-0019)
+      security: [{ adminToken: [] }]
+      parameters:
+        - { in: path, name: eventId, required: true, schema: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CreateEventRequest" } } }
+      responses:
+        "201": { description: "생성 (code=CREATED)", content: { application/json: { schema: { $ref: "#/components/schemas/EventStatusResponse" } } } }
+        "400": { description: "입력 오류 (code=INVALID_REQUEST) — stock·amount 는 1 이상, endsAt 은 미래 시각", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "403": { description: "토큰 없음·불일치, 또는 서버에 ADMIN_API_TOKEN 미설정 (code=FORBIDDEN)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+        "409": { description: "이미 사용한 eventId (code=EVENT_ALREADY_EXISTS)", content: { application/json: { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
   /api/health:
     get:
       tags: [ops]
@@ -226,6 +244,7 @@ components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT, description: "RS256, iss=point-core, sub=사용자 id" }
     refreshCookie: { type: apiKey, in: cookie, name: point_refresh }
+    adminToken: { type: apiKey, in: header, name: X-Admin-Token, description: "운영 런북 전용 (ADMIN_API_TOKEN)" }
   schemas:
     SignupRequest:
       type: object
@@ -336,6 +355,14 @@ components:
             rewardAmount: { type: integer, format: int64, description: 당첨 시 지급 포인트 }
             participants: { type: integer, format: int64 }
             winners: { type: integer, format: int64 }
+            endsAt: { type: string, format: date-time, nullable: true, description: "참여 마감 시각 (UTC). local open 이벤트는 null (마감 없음)" }
+    CreateEventRequest:
+      type: object
+      required: [stock, amount, endsAt]
+      properties:
+        stock: { type: integer, format: int64, minimum: 1, description: 당첨 수량 }
+        amount: { type: integer, format: int64, minimum: 1, description: 당첨 시 지급 포인트 }
+        endsAt: { type: string, format: date-time, description: "참여 마감 시각 (미래, 예: 2026-12-01T12:00:00+09:00)" }
     InstanceInfo:
       type: object
       required: [service, instance, profiles, drMode, rewardStreamEnabled, startedAt, uptimeSeconds, javaVersion]
