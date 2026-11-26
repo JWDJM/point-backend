@@ -34,6 +34,8 @@ public class LocalEventAdminController {
         redis.delete(List.of(EventKeys.participants(eventId), EventKeys.winners(eventId)));
         // amount 를 먼저 둔다: stock 키가 생기는 순간부터 참여가 열리므로, 그 사이 당첨자가 기본 금액으로 지급되지 않게
         redis.opsForValue().set(EventKeys.amount(eventId), String.valueOf(amount));
+        // 보상 Stream 을 먼저 등록한다: 참여가 열린 뒤에는 core-service 가 이 Stream 을 이미 알고 있어야 한다 (ADR-0019)
+        redis.opsForSet().add(EventKeys.REWARD_STREAMS, EventKeys.rewards(eventId));
         redis.opsForValue().set(EventKeys.stock(eventId), String.valueOf(stock));
         return status(eventId);
     }

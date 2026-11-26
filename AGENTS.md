@@ -215,7 +215,7 @@ Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080)와 `event-serv
 
 ## API 계약 / 이벤트 스키마
 - `api/openapi.yaml`, `api/events/` 는 **프론트엔드와의 계약**이다. 변경 시 **같은 PR**에서 구현과 계약을 함께 수정하고, 하위 호환이 깨지면 `breaking-change` 라벨 + `point-frontend` 연계 PR을 PR 본문에 적는다.
-- Kafka 이벤트 스키마 변경은 소비자(원장 반영)의 멱등 처리에 영향을 주는지 먼저 확인한다.
+- 보상 Stream 항목 스키마(`api/events/`) 변경은 소비자(원장 반영)의 멱등 처리에 영향을 주는지 먼저 확인한다. Stream 키 이름은 event-service `EventKeys` 와 core-service `RewardStreams` 가 같아야 한다.
 
 ## 모듈 경계
 - `event-service` 는 `core-service` 코드를 직접 참조하지 않는다. 인증은 JWT 공개키(`JWT_PUBLIC_KEY` / `JWT_JWK_SET_URI`)로 **자체 검증**한다.

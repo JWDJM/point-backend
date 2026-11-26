@@ -24,8 +24,8 @@ import java.util.function.IntFunction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/** 원장 멱등성·동시성 검증 (실제 PostgreSQL). Kafka 는 끄고 PointService 를 직접 호출한다. */
-@SpringBootTest(properties = "app.kafka.enabled=false")
+/** 원장 멱등성·동시성 검증 (실제 PostgreSQL). 원장 반영 Stream consumer 는 끄고 PointService 를 직접 호출한다. */
+@SpringBootTest(properties = "app.reward-stream.enabled=false")
 @Testcontainers
 class PointServiceIdempotencyTest {
 

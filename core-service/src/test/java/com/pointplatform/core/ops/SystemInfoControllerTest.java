@@ -17,8 +17,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** 실제 PostgreSQL 로 상태 API 검증. Kafka 는 끈 상태(DR 모드와 같은 조건)로 DISABLED 표시를 확인한다. */
-@SpringBootTest(properties = {"app.kafka.enabled=false", "app.dr-mode=true"})
+/** 실제 PostgreSQL 로 상태 API 검증. 원장 반영 Stream 은 끈 상태(DR 모드와 같은 조건)로 DISABLED 표시를 확인한다. */
+@SpringBootTest(properties = {"app.reward-stream.enabled=false", "app.dr-mode=true"})
 @AutoConfigureMockMvc
 @Testcontainers
 class SystemInfoControllerTest {
@@ -31,18 +31,18 @@ class SystemInfoControllerTest {
     @Autowired PointService pointService;
 
     @Test
-    void info_는_인스턴스와_DB_상태를_보여주고_Kafka_는_DISABLED_다() throws Exception {
+    void info_는_인스턴스와_DB_상태를_보여주고_원장_반영_Stream_은_DISABLED_다() throws Exception {
         mvc.perform(get("/api/system/info"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("OK"))
                 .andExpect(jsonPath("$.data.instance.service").value("core-service"))
                 .andExpect(jsonPath("$.data.instance.drMode").value(true))
-                .andExpect(jsonPath("$.data.instance.kafkaEnabled").value(false))
+                .andExpect(jsonPath("$.data.instance.rewardStreamEnabled").value(false))
                 .andExpect(jsonPath("$.data.database.status").value("UP"))
                 .andExpect(jsonPath("$.data.database.details.inRecovery").value(false))
                 .andExpect(jsonPath("$.data.database.details.version").isNotEmpty())
                 .andExpect(jsonPath("$.data.database.details.heartbeatLagSeconds").isNumber())
-                .andExpect(jsonPath("$.data.kafka.status").value("DISABLED"));
+                .andExpect(jsonPath("$.data.rewardStream.status").value("DISABLED"));
     }
 
     @Test
