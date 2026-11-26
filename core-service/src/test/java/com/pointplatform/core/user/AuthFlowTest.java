@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** 회원가입 → 로그인 → 보호 API → 재발급(rotation) → 로그아웃 (실제 PostgreSQL) */
-@SpringBootTest(properties = "app.kafka.enabled=false")
+@SpringBootTest(properties = "app.reward-stream.enabled=false")
 @AutoConfigureMockMvc
 @Testcontainers
 class AuthFlowTest {

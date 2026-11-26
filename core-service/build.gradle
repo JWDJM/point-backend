@@ -1,5 +1,6 @@
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'   // 원장 반영 Stream consumer (ADR-0019)
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'   // JWT 발급(Nimbus) + 검증
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'

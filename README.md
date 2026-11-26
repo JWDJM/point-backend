@@ -5,15 +5,15 @@
 | 모듈 | 역할 | 포트 | DR 배포 |
 |---|---|---|---|
 | `core-service` | user / asset / point / cs | 8080 | ✅ |
-| `event-service` | 출석·퀴즈·대기열 (Redis + Kafka) | 8081 | ❌ (DR 시 점검) |
+| `event-service` | 출석·퀴즈·대기열 (Redis — 판정 + 보상 Stream 기록) | 8081 | ❌ (DR 시 점검) |
 
 - 설계 문서·ADR: [point-infra/docs](https://github.com/ZZGG2/point-infra/tree/main/docs)
-- API 계약: [`api/openapi.yaml`](api/openapi.yaml) · Kafka 스키마: [`api/events/`](api/events/)
+- API 계약: [`api/openapi.yaml`](api/openapi.yaml) · 보상 Stream 항목 스키마: [`api/events/`](api/events/)
 
 ## 로컬 실행
 상세 가이드 (Windows, 데모 시나리오 포함): 상위 폴더의 `LOCAL-DEV.md`
 ```bash
-docker compose up -d                      # PostgreSQL, Redis, Kafka
+docker compose up -d                      # PostgreSQL, Redis
 ./gradlew :core-service:bootRun               # :8080  (Windows: .\gradlew.bat)
 ./gradlew :event-service:bootRun          # :8081
 ```
@@ -23,9 +23,9 @@ docker compose up -d                      # PostgreSQL, Redis, Kafka
 |---|---|
 | 포인트 잔액/내역/사용 API (멱등키, 행 잠금, 음수 잔액 차단) | ✅ |
 | 퀴즈 선착순 (Redis Lua: 마감·중복·재고 원자 처리) | ✅ |
-| 퀴즈 당첨·출석 보상 → Kafka → 원장 멱등 반영 (즉시, point-infra ADR-0018) | ✅ |
+| 퀴즈 당첨·출석 보상 → Redis Stream → core-service consumer group → 원장 멱등 반영 (즉시, point-infra ADR-0018·0019) | ✅ |
 | 로컬 데모 데이터 / 데모 이벤트 자동 생성 | ✅ (`local` 프로필) |
-| 운영·인프라 검증 API (`/api/system/{info,whoami,ledger}`, `/api/events/system/{info,whoami}`) — Pod·DB·Redis·Kafka 상태, 원장 집계 | ✅ (`OPS_API_ENABLED=false` 로 끔) |
+| 운영·인프라 검증 API (`/api/system/{info,whoami,ledger}`, `/api/events/system/{info,whoami}`) — Pod·DB·Redis·원장 반영 Stream 상태, 원장 집계 | ✅ (`OPS_API_ENABLED=false` 로 끔) |
 | 회원가입·로그인 (JWT RS256 access token + HttpOnly refresh 쿠키, rotation) — event-service 는 공개키로 자체 검증 | ✅ |
 | 자산조회, 고객센터, 대기열 | ⏳ |
 | DLQ, 대사 배치, Testcontainers 통합 테스트 | ⏳ |

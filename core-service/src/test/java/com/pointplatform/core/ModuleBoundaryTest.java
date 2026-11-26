@@ -11,7 +11,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 /**
  * 모듈 경계 강제: 다른 모듈의 api / domain / infra 패키지 직접 참조 금지.
  * 허용되는 것은 상대 모듈의 application 패키지(public 유스케이스)뿐이다.
- * → 이 규칙이 지켜져야 나중에 모듈 하나를 MSA 로 떼어낼 때 호출부만 HTTP/Kafka 로 바꾸면 된다.
+ * → 이 규칙이 지켜져야 나중에 모듈 하나를 MSA 로 떼어낼 때 호출부만 HTTP/메시지로 바꾸면 된다.
  */
 @AnalyzeClasses(packages = "com.pointplatform.core")
 class ModuleBoundaryTest {

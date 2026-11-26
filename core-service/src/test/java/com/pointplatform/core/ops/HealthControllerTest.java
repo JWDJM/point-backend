@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** /api/health: 인증·OPS 플래그와 무관하게 응답하고, DB 를 못 쓰면 503 */
-@SpringBootTest(properties = {"app.kafka.enabled=false", "app.ops.enabled=false"})
+@SpringBootTest(properties = {"app.reward-stream.enabled=false", "app.ops.enabled=false"})
 @AutoConfigureMockMvc
 @Testcontainers
 class HealthControllerTest {
