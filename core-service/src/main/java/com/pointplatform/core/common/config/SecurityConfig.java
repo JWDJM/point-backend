@@ -1,6 +1,6 @@
 package com.pointplatform.core.common.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.pointplatform.core.common.error.ApiResponse;
 import com.pointplatform.core.common.error.ErrorCode;
 import org.springframework.context.annotation.Bean;
