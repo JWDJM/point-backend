@@ -9,7 +9,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/** 잘못된 입력을 Spring 기본 에러(500/400) 대신 ApiResponse 포맷으로 응답한다 (monolith GlobalExceptionHandler 와 동일 코드) */
+/** 잘못된 입력을 Spring 기본 에러(500/400) 대신 ApiResponse 포맷으로 응답한다 (core-service GlobalExceptionHandler 와 동일 코드) */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

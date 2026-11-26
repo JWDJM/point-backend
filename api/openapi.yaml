@@ -160,16 +160,16 @@ paths:
   /api/system/info:
     get:
       tags: [ops]
-      summary: "monolith 인스턴스·DB·Kafka 상태 (운영/인프라 검증용, OPS_API_ENABLED=false 면 비활성)"
+      summary: "core-service 인스턴스·DB·Kafka 상태 (운영/인프라 검증용, OPS_API_ENABLED=false 면 비활성)"
       security: []
       responses:
         "200":
           description: "구성요소가 죽어 있어도 200 — 각 status(UP/DOWN/DISABLED) 로 구분"
-          content: { application/json: { schema: { $ref: "#/components/schemas/MonolithSystemInfoResponse" } } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/CoreServiceSystemInfoResponse" } } }
   /api/system/whoami:
     get:
       tags: [ops]
-      summary: "응답한 monolith 인스턴스 정보만 (부하 분산 확인용, 외부 점검 없음)"
+      summary: "응답한 core-service 인스턴스 정보만 (부하 분산 확인용, 외부 점검 없음)"
       security: []
       responses:
         "200": { description: 인스턴스, content: { application/json: { schema: { $ref: "#/components/schemas/InstanceInfoResponse" } } } }
@@ -224,7 +224,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/ErrorResponse" }
   securitySchemes:
-    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT, description: "RS256, iss=point-monolith, sub=사용자 id" }
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT, description: "RS256, iss=point-core, sub=사용자 id" }
     refreshCookie: { type: apiKey, in: cookie, name: point_refresh }
   schemas:
     SignupRequest:
@@ -340,7 +340,7 @@ components:
       type: object
       required: [service, instance, profiles, drMode, kafkaEnabled, startedAt, uptimeSeconds, javaVersion]
       properties:
-        service: { type: string, example: monolith }
+        service: { type: string, example: core-service }
         instance: { type: string, description: "응답한 인스턴스 (K8s 에서는 Pod 이름)" }
         profiles: { type: array, items: { type: string } }
         drMode: { type: boolean }
@@ -366,10 +366,10 @@ components:
             구성요소별 정보.
             database: version, database, serverAddress, inRecovery, heartbeatAt, heartbeatLagSeconds
             redis: ping, pingMs, version, mode, role, connectedClients, usedMemory, keys
-            kafka(monolith): clusterId, brokers, topic, consumerGroup, assignedPartitions, consumerLag
+            kafka(core-service): clusterId, brokers, topic, consumerGroup, assignedPartitions, consumerLag
             kafka(event-service): clusterId, brokers, topic, topicExists, partitions, publishedOffsetTotal
         error: { type: string, nullable: true }
-    MonolithSystemInfoResponse:
+    CoreServiceSystemInfoResponse:
       type: object
       properties:
         code: { type: string }
