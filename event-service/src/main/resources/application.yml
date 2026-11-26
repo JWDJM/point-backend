@@ -13,6 +13,8 @@ spring:
 app:
   attendance:
     reward-amount: ${ATTENDANCE_REWARD_AMOUNT:10}
+  admin:
+    api-token: ${ADMIN_API_TOKEN:}   # 이벤트 생성 API(X-Admin-Token). 비우면 관리자 API 는 항상 403
   ops:
     enabled: ${OPS_API_ENABLED:true}   # /api/events/system/** 운영·인프라 검증 API (끄려면 false)
   auth:

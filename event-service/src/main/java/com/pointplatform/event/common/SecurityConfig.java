@@ -27,7 +27,8 @@ import java.security.interfaces.RSAPublicKey;
  *   <li>운영: app.auth.public-key (JWT_PUBLIC_KEY, X.509 PEM)</li>
  *   <li>local: app.auth.jwk-set-uri → core-service /api/auth/jwks.json (임시 키, 받아온 키는 캐시)</li>
  * </ul>
- * 공개 경로: 운영 검증 API, local 전용 이벤트 현황/열기, actuator.
+ * 공개 경로: 운영 검증 API, 이벤트 현황, local 전용 이벤트 열기, actuator.
+ * 관리자 경로(/api/events/admin/**)는 JWT 대신 X-Admin-Token 으로 확인한다 (AdminApiGuard).
  */
 @Configuration
 public class SecurityConfig {
@@ -46,8 +47,10 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/events/system/**", "/actuator/**", "/error").permitAll()
+                        .requestMatchers("/api/events/admin/**").permitAll()   // AdminApiGuard 가 토큰 확인
+                        .requestMatchers("/api/events/*/status").permitAll()
                         // LocalEventAdminController (@Profile("local")) — 운영에는 핸들러가 없어 404
-                        .requestMatchers("/api/events/*/status", "/api/events/*/open").permitAll()
+                        .requestMatchers("/api/events/*/open").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()).authenticationEntryPoint(unauthorized))
                 .exceptionHandling(e -> e.authenticationEntryPoint(unauthorized))

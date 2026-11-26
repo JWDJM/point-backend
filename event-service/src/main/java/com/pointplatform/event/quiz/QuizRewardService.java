@@ -37,9 +37,10 @@ public class QuizRewardService {
         // TODO(#이슈): 정답 검증 (event:{id}:answer). 현재는 제출만 하면 참여로 간주
         List<String> keys = List.of(
                 EventKeys.participants(eventId), EventKeys.stock(eventId), EventKeys.winners(eventId),
-                EventKeys.amount(eventId), EventKeys.rewards(eventId));
+                EventKeys.amount(eventId), EventKeys.rewards(eventId), EventKeys.ends(eventId));
         Long raw = redis.execute(CLAIM_SCRIPT, keys,
-                String.valueOf(userId), eventId, String.valueOf(DEFAULT_AMOUNT), RedisScripts.now(clock));
+                String.valueOf(userId), eventId, String.valueOf(DEFAULT_AMOUNT), RedisScripts.now(clock),
+                String.valueOf(clock.millis()));
         return ClaimResult.fromLua(raw == null ? -2 : raw);
     }
 }
