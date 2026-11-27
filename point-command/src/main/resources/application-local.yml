@@ -1,0 +1,4 @@
+# 로컬 전용: 공개키 대신 core-service(:8080) 의 JWKS 로 검증 (core-service 가 임시 키로 서명하므로)
+app:
+  auth:
+    jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8080/api/auth/jwks.json}

@@ -1,0 +1,36 @@
+package com.pointplatform.pointcommand.api;
+
+import com.pointplatform.common.error.ApiResponse;
+import com.pointplatform.common.security.LoginUser;
+import com.pointplatform.pointcommand.application.PointService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.bind.annotation.*;
+
+
+/** 사용자는 JWT(sub) 로 식별한다 (@LoginUser) */
+@RestController
+@RequestMapping("/api/points")
+public class PointController {
+
+    private final PointService pointService;
+
+    public PointController(PointService pointService) {
+        this.pointService = pointService;
+    }
+
+
+
+    @PostMapping("/use")
+    public ApiResponse<BalanceResponse> use(@LoginUser long userId,
+                                            @RequestHeader("Idempotency-Key") String idempotencyKey,
+                                            @Valid @RequestBody UsePointRequest request) {
+        long balance = pointService.use(userId, request.amount(), idempotencyKey, request.merchantRef());
+        return ApiResponse.ok(new BalanceResponse(balance));
+    }
+
+    public record BalanceResponse(long balance) {}
+
+    public record UsePointRequest(@Min(1) long amount, @NotBlank String merchantRef) {}
+}

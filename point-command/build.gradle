@@ -1,0 +1,17 @@
+// 포인트 쓰기 서비스 (point-infra ADR-0024) — 포인트 사용 + 보상 Stream 적립. 원장에 쓰는 곳은 여기뿐
+dependencies {
+    implementation project(':libs:common')
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'   // 보상 Stream consumer (ADR-0019)
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'   // JWT 자체 검증
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
+    // 테스트 DB 스키마·권한은 db-migration 의 SQL(Flyway)로 만든다
+    testImplementation 'org.springframework.boot:spring-boot-starter-flyway'
+    testImplementation 'org.flywaydb:flyway-database-postgresql'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+}
+
+tasks.named('processTestResources') {
+    from(project(':db-migration').file('src/main/resources')) { include 'db/**' }
+}

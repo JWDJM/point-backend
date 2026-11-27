@@ -211,14 +211,15 @@ gh api --method POST repos/JWDJM/<레포>/issues/PARENT/sub_issues -F sub_issue_
 # 레포별 규칙 — point-backend
 
 ## 이 레포의 범위
-Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080), `point-query`(포인트 조회, :8083)와 `event-service`(출석·퀴즈·대기열, :8081), DB 마이그레이션(`db-migration`), 공통 라이브러리(`libs/common`), API 계약(`api/openapi.yaml`, `api/events/`).
+Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080), `point-command`(포인트 쓰기, :8082), `point-query`(포인트 조회, :8083)와 `event-service`(출석·퀴즈·대기열, :8081), DB 마이그레이션(`db-migration`), 공통 라이브러리(`libs/common`), API 계약(`api/openapi.yaml`, `api/events/`).
 
 ## API 계약 / 이벤트 스키마
 - `api/openapi.yaml`, `api/events/` 는 **프론트엔드와의 계약**이다. 변경 시 **같은 PR**에서 구현과 계약을 함께 수정하고, 하위 호환이 깨지면 `breaking-change` 라벨 + `point-frontend` 연계 PR을 PR 본문에 적는다.
-- 보상 Stream 항목 스키마(`api/events/`) 변경은 소비자(원장 반영)의 멱등 처리에 영향을 주는지 먼저 확인한다. Stream 키 이름은 event-service `EventKeys` 와 core-service `RewardStreams` 가 같아야 한다.
+- 보상 Stream 항목 스키마(`api/events/`) 변경은 소비자(원장 반영)의 멱등 처리에 영향을 주는지 먼저 확인한다. Stream 키 이름은 event-service `EventKeys` 와 `RewardStreams`(point-command, 전환 기간에는 core-service 에도 있음)가 같아야 한다.
 
 ## 모듈 경계
 - `event-service` 는 `core-service` 코드를 직접 참조하지 않는다. 인증은 JWT 공개키(`JWT_PUBLIC_KEY` / `JWT_JWK_SET_URI`)로 **자체 검증**한다.
+- **원장(`point_ledger`)·지갑에 쓰는 새 코드는 `point-command` 에만 둔다** (사용·적립, 멱등키·행 잠금·음수 잔액 차단). core-service 에 남은 같은 코드는 전환 후 삭제한다 (#21) — 그 전까지 두 곳을 함께 고친다.
 - `point-query` 는 **조회만** 한다 (point_query 계정 SELECT + read-only 커넥션). 포인트 쓰기 코드를 넣지 않는다 — 쓰기는 point-command (ADR-0024).
 - 포인트 원장은 append-only. 보정도 새 행 추가로만 처리한다 (공통 규칙 §4).
 - **DB 마이그레이션 SQL 은 `db-migration/src/main/resources/db/` 에만 둔다.** 서비스 모듈에 Flyway 파일을 만들지 않는다 (서비스는 Flyway 를 실행하지 않음, 테스트는 이 SQL 을 복사해 쓴다). 기존 V 파일은 수정 금지, 새 변경은 새 V 파일 (공통 규칙 §3).

@@ -1,0 +1,32 @@
+server:
+  port: 8082
+  shutdown: graceful
+spring:
+  application:
+    name: point-command
+  profiles:
+    default: local          # K8s 에서는 SPRING_PROFILES_ACTIVE=aws / gcp-dr
+  datasource:
+    # point_command 계정 (point 스키마 SELECT·INSERT·UPDATE, point_ledger 는 SELECT·INSERT 만 — afterMigrate.sql)
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/point}
+    username: ${DB_USERNAME:app_rw}     # 기본값은 로컬 docker 용
+    password: ${DB_PASSWORD:app_rw}
+  data:
+    redis:   # 보상 Stream (event-service 와 같은 ElastiCache, ADR-0019) — 읽기만 한다. 연결은 첫 사용 때 맺는다
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+app:
+  reward-stream:
+    enabled: ${REWARD_STREAM_ENABLED:true}   # gcp-dr 에서는 false (DR 에는 Redis 가 없다, ADR-0004)
+  dr-mode: ${DR_MODE:false}
+  ops:
+    enabled: ${OPS_API_ENABLED:true}    # /api/system/point-command/** 운영·인프라 검증 API (끄려면 false)
+  auth:
+    # JWT 검증만 한다 (발급은 user 쪽). 운영은 공개키, local 은 JWKS
+    public-key: ${JWT_PUBLIC_KEY:}
+    jwk-set-uri: ${JWT_JWK_SET_URI:}
+    issuer: ${JWT_ISSUER:point-core}
+management:
+  endpoints.web.exposure.include: health,info,prometheus
+  endpoint.health.probes.enabled: true       # readiness 그룹에는 Redis 가 없다 → Redis 장애로 트래픽이 끊기지 않는다
+  health.redis.enabled: ${REWARD_STREAM_ENABLED:true}   # DR 에서 Redis 없음으로 /actuator/health 가 DOWN 이 되지 않게
