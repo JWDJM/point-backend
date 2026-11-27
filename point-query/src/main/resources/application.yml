@@ -1,0 +1,27 @@
+server:
+  port: 8083
+  shutdown: graceful
+spring:
+  application:
+    name: point-query
+  profiles:
+    default: local          # K8s 에서는 SPRING_PROFILES_ACTIVE=aws / gcp-dr
+  datasource:
+    # point_query 계정 (point 스키마 SELECT 만 — point-infra scripts/db/app-roles.sql, db-migration afterMigrate.sql)
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/point}
+    username: ${DB_USERNAME:app_rw}     # 기본값은 로컬 docker 용
+    password: ${DB_PASSWORD:app_rw}
+    hikari:
+      read-only: true                   # DB 권한과 별개로 커넥션도 읽기 전용 (쓰기 시도는 즉시 실패)
+app:
+  dr-mode: ${DR_MODE:false}
+  ops:
+    enabled: ${OPS_API_ENABLED:true}    # /api/system/point-query/** 운영·인프라 검증 API (끄려면 false)
+  auth:
+    # JWT 검증만 한다 (발급은 user 쪽). 운영은 공개키, local 은 JWKS
+    public-key: ${JWT_PUBLIC_KEY:}
+    jwk-set-uri: ${JWT_JWK_SET_URI:}
+    issuer: ${JWT_ISSUER:point-core}    # 발급 서비스 이름이 바뀌어도 값은 유지 (바꾸면 기존 토큰 무효)
+management:
+  endpoints.web.exposure.include: health,info,prometheus
+  endpoint.health.probes.enabled: true

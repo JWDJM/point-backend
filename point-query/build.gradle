@@ -1,0 +1,17 @@
+// 포인트 조회 서비스 (point-infra ADR-0024) — 잔액·내역·원장 집계·/api/health. 쓰기 없음, Redis 없음
+// DB 는 point_query 계정(point 스키마 SELECT 만, afterMigrate.sql)으로 읽고, 커넥션도 read-only 로 연다
+dependencies {
+    implementation project(':libs:common')
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'   // JWT 자체 검증 (공개키 / JWKS)
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
+    // 테스트 DB 스키마·권한은 db-migration 의 SQL(Flyway)로 만든다 — 마이그레이션 원본은 한 곳에만
+    testImplementation 'org.springframework.boot:spring-boot-starter-flyway'
+    testImplementation 'org.flywaydb:flyway-database-postgresql'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+}
+
+tasks.named('processTestResources') {
+    from(project(':db-migration').file('src/main/resources')) { include 'db/**' }
+}

@@ -29,6 +29,13 @@ BEGIN
     GRANT SELECT ON ALL TABLES IN SCHEMA point TO point_query;
   END IF;
 
+  -- 운영 API 의 DB 점검(DatabaseProbe)이 읽는 DR 복제 heartbeat — 서비스 계정 모두 조회만
+  IF to_regclass('public.dr_heartbeat') IS NOT NULL THEN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'user_service') THEN GRANT SELECT ON public.dr_heartbeat TO user_service; END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'point_command') THEN GRANT SELECT ON public.dr_heartbeat TO point_command; END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'point_query') THEN GRANT SELECT ON public.dr_heartbeat TO point_query; END IF;
+  END IF;
+
   -- 이행 기간: core-service 가 쓰는 app_rw. point_migrator 가 새로 만든 테이블에도 접근해야 한다.
   -- core-service → user-service 전환(point-infra#60)에서 app_rw 와 함께 이 블록을 지운다
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_rw') AND current_user <> 'app_rw' THEN
