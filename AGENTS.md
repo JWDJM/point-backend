@@ -211,7 +211,7 @@ gh api --method POST repos/JWDJM/<레포>/issues/PARENT/sub_issues -F sub_issue_
 # 레포별 규칙 — point-backend
 
 ## 이 레포의 범위
-Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080)와 `event-service`(출석·퀴즈·대기열, :8081), API 계약(`api/openapi.yaml`, `api/events/`).
+Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080)와 `event-service`(출석·퀴즈·대기열, :8081), 공통 라이브러리(`libs/common`), API 계약(`api/openapi.yaml`, `api/events/`).
 
 ## API 계약 / 이벤트 스키마
 - `api/openapi.yaml`, `api/events/` 는 **프론트엔드와의 계약**이다. 변경 시 **같은 PR**에서 구현과 계약을 함께 수정하고, 하위 호환이 깨지면 `breaking-change` 라벨 + `point-frontend` 연계 PR을 PR 본문에 적는다.
@@ -220,6 +220,7 @@ Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080)와 `event-serv
 ## 모듈 경계
 - `event-service` 는 `core-service` 코드를 직접 참조하지 않는다. 인증은 JWT 공개키(`JWT_PUBLIC_KEY` / `JWT_JWK_SET_URI`)로 **자체 검증**한다.
 - 포인트 원장은 append-only. 보정도 새 행 추가로만 처리한다 (공통 규칙 §4).
+- `libs/common` 은 서비스 공통 라이브러리다 (point-infra ADR-0024). **도메인 로직·도메인 에러 코드를 넣지 않는다.** 도메인 에러 코드는 각 서비스가 `ErrorCode` 인터페이스를 구현한 enum 으로 갖는다 (예: `PointErrorCode`). 공통 코드(`CommonErrorCode`)를 추가·변경하면 모든 서비스 응답에 영향이 있으므로 단독 PR 로 한다.
 
 ## 설정 / 시크릿
 - JWT 키, 관리자 API 토큰(`app.admin.api-token`, 헤더 `X-Admin-Token`, `/api/admin/**`) 등 시크릿은 환경 변수로만 주입한다. `local` 프로필의 데모 값을 다른 프로필에 복사하지 않는다.

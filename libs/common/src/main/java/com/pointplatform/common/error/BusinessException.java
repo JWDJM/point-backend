@@ -1,4 +1,4 @@
-package com.pointplatform.core.common.error;
+package com.pointplatform.common.error;
 
 public class BusinessException extends RuntimeException {
     private final ErrorCode errorCode;

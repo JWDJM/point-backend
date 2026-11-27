@@ -1,4 +1,5 @@
 dependencies {
+    implementation project(':libs:common')   // 공통 응답·에러 코드 계약, @LoginUser (ADR-0024)
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'   // 원장 반영 Stream consumer (ADR-0019)
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'   // JWT 발급(Nimbus) + 검증

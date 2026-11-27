@@ -1,7 +1,7 @@
 package com.pointplatform.core.point.api;
 
-import com.pointplatform.core.common.error.ApiResponse;
-import com.pointplatform.core.common.security.LoginUser;
+import com.pointplatform.common.error.ApiResponse;
+import com.pointplatform.common.security.LoginUser;
 import com.pointplatform.core.point.application.PointService;
 import com.pointplatform.core.point.domain.LedgerEntry;
 import jakarta.validation.Valid;

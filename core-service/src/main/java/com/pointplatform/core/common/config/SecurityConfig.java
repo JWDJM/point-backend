@@ -1,8 +1,8 @@
 package com.pointplatform.core.common.config;
 
+import com.pointplatform.common.error.CommonErrorCode;
 import tools.jackson.databind.ObjectMapper;
-import com.pointplatform.core.common.error.ApiResponse;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.ApiResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -25,10 +25,10 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper objectMapper) throws Exception {
         AuthenticationEntryPoint unauthorized = (request, response, e) -> {
-            response.setStatus(ErrorCode.UNAUTHORIZED.status().value());
+            response.setStatus(CommonErrorCode.UNAUTHORIZED.status().value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
-            objectMapper.writeValue(response.getWriter(), ApiResponse.error(ErrorCode.UNAUTHORIZED));
+            objectMapper.writeValue(response.getWriter(), ApiResponse.error(CommonErrorCode.UNAUTHORIZED));
         };
         return http
                 // CSRF: 상태 변경 API 는 Bearer 헤더로만 인증. 쿠키(refresh)는 /api/auth 경로 전용 + SameSite=Strict

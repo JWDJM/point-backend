@@ -1,7 +1,7 @@
 package com.pointplatform.core.point;
 
-import com.pointplatform.core.common.error.BusinessException;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.core.point.domain.PointErrorCode;
+import com.pointplatform.common.error.BusinessException;
 import com.pointplatform.core.point.application.PointService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ class PointServiceIdempotencyTest {
                 pointService.use(user, 100, "pay-" + i, "m-" + i);
                 return true;
             } catch (BusinessException e) {
-                assertThat(e.errorCode()).isEqualTo(ErrorCode.INSUFFICIENT_BALANCE);
+                assertThat(e.errorCode()).isEqualTo(PointErrorCode.INSUFFICIENT_BALANCE);
                 return false;
             }
         });

@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 rootProject.name = 'point-backend'
-include 'core-service', 'event-service'
+include 'libs:common', 'core-service', 'event-service'

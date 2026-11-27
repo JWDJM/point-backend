@@ -1,6 +1,6 @@
 package com.pointplatform.core.user.api;
 
-import com.pointplatform.core.common.error.ApiResponse;
+import com.pointplatform.common.error.ApiResponse;
 import com.pointplatform.core.common.security.AuthProperties;
 import com.pointplatform.core.user.application.AuthService;
 import com.pointplatform.core.user.application.AuthSession;
