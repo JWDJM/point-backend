@@ -5,6 +5,7 @@
 | 모듈 | 역할 | 포트 | DR 배포 |
 |---|---|---|---|
 | `core-service` | user / asset / point / cs | 8080 | ✅ |
+| `point-command` | 포인트 사용 + 보상 Stream 적립 (원장 쓰기 전담, `point_command` 계정 — 원장은 INSERT 만). core-service 와 같은 consumer group(`point-ledger`)으로 병행 — 전환 전까지 (ADR-0024) | 8082 | ✅ (Stream consumer 는 DR 에서 비활성) |
 | `point-query` | 포인트 잔액·내역·원장 집계·`/api/health` (조회 전용, `point_query` 계정 + read-only 커넥션). core-service 와 같은 조회 API 를 제공 — 라우트 전환 전까지 병행 (ADR-0024) | 8083 | ✅ |
 | `event-service` | 출석·퀴즈·대기열 (Redis — 판정 + 보상 Stream 기록) | 8081 | ❌ (DR 시 점검) |
 | `db-migration` | Flyway 마이그레이션 실행 후 종료 (SQL 원본: `db-migration/src/main/resources/db/`). 서비스는 Flyway 를 실행하지 않는다 | — | ✅ (K8s Job) |
@@ -19,6 +20,7 @@
 docker compose up -d                      # PostgreSQL, Redis
 ./gradlew :db-migration:bootRun           # DB 스키마·데모 시드 적용 후 종료 (= make migrate). 마이그레이션 추가 시 다시 실행
 ./gradlew :core-service:bootRun               # :8080  (Windows: .\gradlew.bat)
+./gradlew :point-command:bootRun          # :8082  (core-service JWKS 로 JWT 검증 → core-service 먼저)
 ./gradlew :point-query:bootRun            # :8083  (core-service JWKS 로 JWT 검증 → core-service 먼저)
 ./gradlew :event-service:bootRun          # :8081
 ```
@@ -30,7 +32,7 @@ docker compose up -d                      # PostgreSQL, Redis
 | 퀴즈 선착순 (Redis Lua: 마감·중복·재고 원자 처리) | ✅ |
 | 퀴즈 당첨·출석 보상 → Redis Stream → core-service consumer group → 원장 멱등 반영 (즉시, point-infra ADR-0018·0019) | ✅ |
 | 로컬 데모 데이터 / 데모 이벤트 자동 생성 | ✅ (`local` 프로필) |
-| 운영·인프라 검증 API (`/api/system/{info,whoami,ledger}`, `/api/system/point-query/{info,whoami,ledger}`, `/api/events/system/{info,whoami}`) — Pod·DB·Redis·원장 반영 Stream 상태, 원장 집계 | ✅ (`OPS_API_ENABLED=false` 로 끔) |
+| 운영·인프라 검증 API (`/api/system/{info,whoami,ledger}`, `/api/system/point-query/{info,whoami,ledger}`, `/api/system/point-command/{info,whoami}`, `/api/events/system/{info,whoami}`) — Pod·DB·Redis·원장 반영 Stream 상태, 원장 집계 | ✅ (`OPS_API_ENABLED=false` 로 끔) |
 | 회원가입·로그인 (JWT RS256 access token + HttpOnly refresh 쿠키, rotation) — event-service 는 공개키로 자체 검증 | ✅ |
 | 자산조회, 고객센터, 대기열 | ⏳ |
 | DLQ, 대사 배치, Testcontainers 통합 테스트 | ⏳ |

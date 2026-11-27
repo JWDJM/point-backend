@@ -1,0 +1,7 @@
+# 테스트 전용 (classpath:/config/ 는 main 의 application.yml 위에 덧씌워진다).
+# 운영에서는 db-migration Job 이 마이그레이션하고 point-command 는 Flyway 를 실행하지 않는다 (ADR-0024).
+# 테스트는 Testcontainers 빈 DB 에 같은 SQL(db-migration 에서 복사)을 적용한다.
+spring:
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/local

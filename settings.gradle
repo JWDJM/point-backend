@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 rootProject.name = 'point-backend'
-include 'libs:common', 'db-migration', 'core-service', 'point-query', 'event-service'
+include 'libs:common', 'db-migration', 'core-service', 'point-command', 'point-query', 'event-service'

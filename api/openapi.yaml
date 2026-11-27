@@ -208,6 +208,22 @@ paths:
         - { in: query, name: recent, required: false, schema: { type: integer, minimum: 1, maximum: 50, default: 15 } }
       responses:
         "200": { description: 집계, content: { application/json: { schema: { $ref: "#/components/schemas/LedgerStatsResponse" } } } }
+  /api/system/point-command/info:
+    get:
+      tags: [ops]
+      summary: "point-command 인스턴스·DB·보상 Stream 소비 상태 (운영/인프라 검증용, OPS_API_ENABLED=false 면 비활성). 경로 형식 /api/system/{서비스}/** (ADR-0024)"
+      security: []
+      responses:
+        "200":
+          description: "구성요소가 죽어 있어도 200 — 각 status(UP/DOWN/DISABLED) 로 구분. 응답 형식은 /api/system/info 와 같다"
+          content: { application/json: { schema: { $ref: "#/components/schemas/CoreServiceSystemInfoResponse" } } }
+  /api/system/point-command/whoami:
+    get:
+      tags: [ops]
+      summary: "응답한 point-command 인스턴스 정보만 (부하 분산 확인용, 외부 점검 없음)"
+      security: []
+      responses:
+        "200": { description: 인스턴스, content: { application/json: { schema: { $ref: "#/components/schemas/InstanceInfoResponse" } } } }
   /api/system/point-query/info:
     get:
       tags: [ops]
