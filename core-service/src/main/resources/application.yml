@@ -10,8 +10,6 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/point}
     username: ${DB_USERNAME:app_rw}
     password: ${DB_PASSWORD:app_rw}
-  flyway:
-    enabled: true
   data:
     redis:   # 원장 반영 Stream (event-service 와 같은 ElastiCache, ADR-0019). 연결은 첫 사용 때 맺는다
       host: ${REDIS_HOST:localhost}
