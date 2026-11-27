@@ -1,0 +1,10 @@
+// DB 마이그레이션 전용 실행 모듈 (point-infra ADR-0024): Flyway 를 한 번 실행하고 종료한다.
+// 서비스(core-service 등)는 Flyway 를 실행하지 않는다. K8s 에서는 ArgoCD PreSync Job 으로 돈다 (point-infra #55).
+// 기존 마이그레이션 파일은 수정하지 않는다 — 새 변경은 새 V 파일로만 추가 (공통 규칙 §3).
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'   // Boot 4: flyway-core 만으로는 자동 설정이 붙지 않는다
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+}

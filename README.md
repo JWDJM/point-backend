@@ -6,6 +6,7 @@
 |---|---|---|---|
 | `core-service` | user / asset / point / cs | 8080 | ✅ |
 | `event-service` | 출석·퀴즈·대기열 (Redis — 판정 + 보상 Stream 기록) | 8081 | ❌ (DR 시 점검) |
+| `db-migration` | Flyway 마이그레이션 실행 후 종료 (SQL 원본: `db-migration/src/main/resources/db/`). 서비스는 Flyway 를 실행하지 않는다 | — | ✅ (K8s Job) |
 | `libs/common` | 서비스 공통 라이브러리 — 응답 형식 `{code, data, message}`, 에러 코드 계약(`ErrorCode`), `@LoginUser` (실행 모듈 아님) | — | (각 서비스에 포함) |
 
 - 설계 문서·ADR: [point-infra/docs](https://github.com/ZZGG2/point-infra/tree/main/docs)
@@ -15,6 +16,7 @@
 상세 가이드 (Windows, 데모 시나리오 포함): 상위 폴더의 `LOCAL-DEV.md`
 ```bash
 docker compose up -d                      # PostgreSQL, Redis
+./gradlew :db-migration:bootRun           # DB 스키마·데모 시드 적용 후 종료 (= make migrate). 마이그레이션 추가 시 다시 실행
 ./gradlew :core-service:bootRun               # :8080  (Windows: .\gradlew.bat)
 ./gradlew :event-service:bootRun          # :8081
 ```
