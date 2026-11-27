@@ -221,6 +221,7 @@ Spring Boot 백엔드. `core-service`(user/asset/point/cs, :8080)와 `event-serv
 - `event-service` 는 `core-service` 코드를 직접 참조하지 않는다. 인증은 JWT 공개키(`JWT_PUBLIC_KEY` / `JWT_JWK_SET_URI`)로 **자체 검증**한다.
 - 포인트 원장은 append-only. 보정도 새 행 추가로만 처리한다 (공통 규칙 §4).
 - **DB 마이그레이션 SQL 은 `db-migration/src/main/resources/db/` 에만 둔다.** 서비스 모듈에 Flyway 파일을 만들지 않는다 (서비스는 Flyway 를 실행하지 않음, 테스트는 이 SQL 을 복사해 쓴다). 기존 V 파일은 수정 금지, 새 변경은 새 V 파일 (공통 규칙 §3).
+- **서비스 계정 권한(GRANT)은 `db-migration/.../db/migration/afterMigrate.sql` 에서만 건다.** V 파일에 GRANT 를 쓰지 않는다. `point_ledger` 에 UPDATE·DELETE 권한을 주지 않는다 (append-only 를 DB 권한으로 강제). 계정은 point-infra `scripts/db/app-roles.sql` 이 만든다.
 - `libs/common` 은 서비스 공통 라이브러리다 (point-infra ADR-0024). **도메인 로직·도메인 에러 코드를 넣지 않는다.** 도메인 에러 코드는 각 서비스가 `ErrorCode` 인터페이스를 구현한 enum 으로 갖는다 (예: `PointErrorCode`). 공통 코드(`CommonErrorCode`)를 추가·변경하면 모든 서비스 응답에 영향이 있으므로 단독 PR 로 한다.
 
 ## 설정 / 시크릿
