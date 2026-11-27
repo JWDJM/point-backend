@@ -1,4 +1,4 @@
-package com.pointplatform.core.common.error;
+package com.pointplatform.common.error;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +18,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MissingRequestHeaderException.class, MethodArgumentNotValidException.class,
             HttpMessageNotReadableException.class})
     ResponseEntity<ApiResponse<Void>> invalid(Exception e) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(ErrorCode.INVALID_REQUEST));
+        return ResponseEntity.badRequest().body(ApiResponse.error(CommonErrorCode.INVALID_REQUEST));
     }
 }

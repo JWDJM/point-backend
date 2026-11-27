@@ -1,7 +1,8 @@
 package com.pointplatform.core.ops;
 
-import com.pointplatform.core.common.error.ApiResponse;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.CommonErrorCode;
+import com.pointplatform.common.error.ApiResponse;
+import com.pointplatform.common.error.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,7 @@ public class HealthController {
         if ("UP".equals(db.status())) {
             return ResponseEntity.ok(ApiResponse.ok(Map.of("status", "UP")));
         }
-        ErrorCode code = ErrorCode.SERVICE_UNAVAILABLE;
+        ErrorCode code = CommonErrorCode.SERVICE_UNAVAILABLE;
         return ResponseEntity.status(code.status())
                 .body(new ApiResponse<>(code.name(), null, code.message()));
     }

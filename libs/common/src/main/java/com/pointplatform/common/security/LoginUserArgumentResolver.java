@@ -1,7 +1,7 @@
-package com.pointplatform.core.common.security;
+package com.pointplatform.common.security;
 
-import com.pointplatform.core.common.error.BusinessException;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.CommonErrorCode;
+import com.pointplatform.common.error.BusinessException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -41,6 +41,6 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver,
                 // sub 가 숫자가 아니면 이 서비스가 발급한 토큰이 아니다
             }
         }
-        throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        throw new BusinessException(CommonErrorCode.UNAUTHORIZED);
     }
 }

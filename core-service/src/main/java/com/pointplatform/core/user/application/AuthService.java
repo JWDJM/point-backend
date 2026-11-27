@@ -1,7 +1,8 @@
 package com.pointplatform.core.user.application;
 
-import com.pointplatform.core.common.error.BusinessException;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.CommonErrorCode;
+import com.pointplatform.core.user.domain.UserErrorCode;
+import com.pointplatform.common.error.BusinessException;
 import com.pointplatform.core.common.security.AuthProperties;
 import com.pointplatform.core.user.domain.RefreshToken;
 import com.pointplatform.core.user.domain.UserAccount;
@@ -66,7 +67,7 @@ public class AuthService {
         try {
             userId = users.insertUser(normalized, name.strip());
         } catch (DuplicateKeyException e) {
-            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+            throw new BusinessException(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
         users.insertCredential(userId, passwordEncoder.encode(password));
         UserAccount user = users.findById(userId).orElseThrow();
@@ -79,7 +80,7 @@ public class AuthService {
         String hash = user.flatMap(u -> users.findPasswordHash(u.id())).orElse(null);
         boolean matches = passwordEncoder.matches(password, hash != null ? hash : dummyHash);
         if (user.isEmpty() || hash == null || !matches) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+            throw new BusinessException(UserErrorCode.INVALID_CREDENTIALS);
         }
         refreshTokens.deleteStale(user.get().id());
         return issue(user.get());
@@ -89,14 +90,14 @@ public class AuthService {
     @Transactional
     public AuthSession refresh(String rawRefreshToken) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
-            throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN);
         }
         RefreshToken token = refreshTokens.findForUpdate(sha256(rawRefreshToken))
                 .filter(t -> t.usableAt(OffsetDateTime.now(ZoneOffset.UTC)))
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN));
         refreshTokens.revoke(token.id());
         UserAccount user = users.findById(token.userId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.INVALID_REFRESH_TOKEN));
         return issue(user);
     }
 
@@ -110,7 +111,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public UserProfile me(long userId) {
         return users.findById(userId).map(UserProfile::of)
-                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
+                .orElseThrow(() -> new BusinessException(CommonErrorCode.UNAUTHORIZED));
     }
 
     private AuthSession issue(UserAccount user) {

@@ -1,6 +1,6 @@
 package com.pointplatform.core.ops;
 
-import com.pointplatform.core.common.error.ApiResponse;
+import com.pointplatform.common.error.ApiResponse;
 import com.pointplatform.core.point.application.PointService;
 import com.pointplatform.core.point.application.PointStats;
 import org.springframework.beans.factory.annotation.Value;

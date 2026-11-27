@@ -1,7 +1,7 @@
 package com.pointplatform.core.user.api;
 
-import com.pointplatform.core.common.error.ApiResponse;
-import com.pointplatform.core.common.security.LoginUser;
+import com.pointplatform.common.error.ApiResponse;
+import com.pointplatform.common.security.LoginUser;
 import com.pointplatform.core.user.application.AuthService;
 import com.pointplatform.core.user.application.UserProfile;
 import org.springframework.web.bind.annotation.GetMapping;

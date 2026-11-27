@@ -6,6 +6,7 @@
 |---|---|---|---|
 | `core-service` | user / asset / point / cs | 8080 | ✅ |
 | `event-service` | 출석·퀴즈·대기열 (Redis — 판정 + 보상 Stream 기록) | 8081 | ❌ (DR 시 점검) |
+| `libs/common` | 서비스 공통 라이브러리 — 응답 형식 `{code, data, message}`, 에러 코드 계약(`ErrorCode`), `@LoginUser` (실행 모듈 아님) | — | (각 서비스에 포함) |
 
 - 설계 문서·ADR: [point-infra/docs](https://github.com/ZZGG2/point-infra/tree/main/docs)
 - API 계약: [`api/openapi.yaml`](api/openapi.yaml) · 보상 Stream 항목 스키마: [`api/events/`](api/events/)

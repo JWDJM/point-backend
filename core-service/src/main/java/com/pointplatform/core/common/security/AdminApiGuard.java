@@ -1,7 +1,7 @@
 package com.pointplatform.core.common.security;
 
-import com.pointplatform.core.common.error.BusinessException;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.CommonErrorCode;
+import com.pointplatform.common.error.BusinessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +29,7 @@ public class AdminApiGuard {
     public void check(String provided) {
         if (token.length == 0 || provided == null
                 || !MessageDigest.isEqual(token, provided.trim().getBytes(StandardCharsets.UTF_8))) {
-            throw new BusinessException(ErrorCode.FORBIDDEN);
+            throw new BusinessException(CommonErrorCode.FORBIDDEN);
         }
     }
 }

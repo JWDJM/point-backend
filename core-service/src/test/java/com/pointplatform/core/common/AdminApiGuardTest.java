@@ -1,6 +1,6 @@
 package com.pointplatform.core.common;
 
-import com.pointplatform.core.common.error.BusinessException;
+import com.pointplatform.common.error.BusinessException;
 import com.pointplatform.core.common.security.AdminApiGuard;
 import org.junit.jupiter.api.Test;
 

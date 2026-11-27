@@ -1,0 +1,10 @@
+// 서비스 공통 라이브러리 (실행 모듈 아님): 공통 응답·에러 코드 계약, @LoginUser 주입 — point-infra ADR-0024
+// 도메인 로직·도메인 에러 코드는 넣지 않는다. JWT 발급(서명 키·JWKS)은 user 쪽에만 둔다.
+apply plugin: 'java-library'
+
+tasks.named('bootJar') { enabled = false }
+tasks.named('jar') { enabled = true; archiveClassifier = '' }   // Boot 플러그인 기본값 '-plain' 제거
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'   // LoginUserArgumentResolver (JwtAuthenticationToken)
+}

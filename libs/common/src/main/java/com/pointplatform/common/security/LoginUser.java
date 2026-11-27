@@ -1,4 +1,4 @@
-package com.pointplatform.core.common.security;
+package com.pointplatform.common.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

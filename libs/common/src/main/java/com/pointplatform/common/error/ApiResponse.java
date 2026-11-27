@@ -1,4 +1,4 @@
-package com.pointplatform.core.common.error;
+package com.pointplatform.common.error;
 
 /** 공통 응답 포맷 { code, data, message } */
 public record ApiResponse<T>(String code, T data, String message) {

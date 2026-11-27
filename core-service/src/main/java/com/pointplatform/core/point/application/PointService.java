@@ -1,7 +1,8 @@
 package com.pointplatform.core.point.application;
 
-import com.pointplatform.core.common.error.BusinessException;
-import com.pointplatform.core.common.error.ErrorCode;
+import com.pointplatform.common.error.CommonErrorCode;
+import com.pointplatform.core.point.domain.PointErrorCode;
+import com.pointplatform.common.error.BusinessException;
 import com.pointplatform.core.point.domain.LedgerEntry;
 import com.pointplatform.core.point.domain.LedgerType;
 import com.pointplatform.core.point.infra.PointRepository;
@@ -67,7 +68,7 @@ public class PointService {
 
     static String clientScopedKey(long userId, String clientKey) {
         if (clientKey == null || clientKey.isBlank() || clientKey.length() > MAX_CLIENT_KEY_LENGTH) {
-            throw new BusinessException(ErrorCode.INVALID_REQUEST);
+            throw new BusinessException(CommonErrorCode.INVALID_REQUEST);
         }
         return "use:" + userId + ":" + clientKey;
     }
@@ -80,7 +81,7 @@ public class PointService {
         }
         long next = current + signedAmount;
         if (next < 0) {
-            throw new BusinessException(ErrorCode.INSUFFICIENT_BALANCE);
+            throw new BusinessException(PointErrorCode.INSUFFICIENT_BALANCE);
         }
         boolean inserted = repository.insertLedger(userId, type, signedAmount, next, idempotencyKey, source, referenceId)
                 .isPresent();
