@@ -1,4 +1,4 @@
-.PHONY: local-up local-down migrate run-core run-event test
+.PHONY: local-up local-down migrate run-core run-point-query run-event test
 
 local-up:
 	docker compose up -d
@@ -12,6 +12,10 @@ migrate:
 
 run-core:
 	./gradlew :core-service:bootRun
+
+# 포인트 조회 (:8083). JWT 는 core-service(:8080) JWKS 로 검증하므로 run-core 를 먼저 띄운다
+run-point-query:
+	./gradlew :point-query:bootRun
 
 run-event:
 	./gradlew :event-service:bootRun

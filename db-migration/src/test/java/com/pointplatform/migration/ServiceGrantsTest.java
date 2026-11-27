@@ -66,6 +66,14 @@ class ServiceGrantsTest {
     }
 
     @Test
+    void 서비스_계정은_DR_heartbeat_를_조회만_할_수_있다() {
+        for (String role : new String[]{"user_service", "point_command", "point_query"}) {
+            runAs(role, "SELECT ts FROM public.dr_heartbeat");
+            assertDenied(role, "UPDATE public.dr_heartbeat SET ts = now()");
+        }
+    }
+
+    @Test
     void 이행_기간의_app_rw_는_모든_도메인_스키마를_쓸_수_있다() {
         runAs("app_rw", INSERT_LEDGER);
         runAs("app_rw", "INSERT INTO users.app_user (email, name_enc) VALUES ('app_rw@test', 'x')");

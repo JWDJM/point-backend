@@ -208,6 +208,31 @@ paths:
         - { in: query, name: recent, required: false, schema: { type: integer, minimum: 1, maximum: 50, default: 15 } }
       responses:
         "200": { description: 집계, content: { application/json: { schema: { $ref: "#/components/schemas/LedgerStatsResponse" } } } }
+  /api/system/point-query/info:
+    get:
+      tags: [ops]
+      summary: "point-query 인스턴스·DB 상태 (운영/인프라 검증용, OPS_API_ENABLED=false 면 비활성). 경로 형식 /api/system/{서비스}/** (ADR-0024)"
+      security: []
+      responses:
+        "200":
+          description: "DB 가 죽어 있어도 200 — status(UP/DOWN) 로 구분"
+          content: { application/json: { schema: { $ref: "#/components/schemas/PointQuerySystemInfoResponse" } } }
+  /api/system/point-query/whoami:
+    get:
+      tags: [ops]
+      summary: "응답한 point-query 인스턴스 정보만 (부하 분산 확인용, 외부 점검 없음)"
+      security: []
+      responses:
+        "200": { description: 인스턴스, content: { application/json: { schema: { $ref: "#/components/schemas/InstanceInfoResponse" } } } }
+  /api/system/point-query/ledger:
+    get:
+      tags: [ops]
+      summary: "원장 집계 + 전체 사용자 최근 활동 (point-query, 운영/인프라 검증용). /api/system/ledger 와 같은 응답"
+      security: []
+      parameters:
+        - { in: query, name: recent, required: false, schema: { type: integer, minimum: 1, maximum: 50, default: 15 } }
+      responses:
+        "200": { description: 집계, content: { application/json: { schema: { $ref: "#/components/schemas/LedgerStatsResponse" } } } }
   /api/events/system/info:
     get:
       tags: [ops]
@@ -406,6 +431,16 @@ components:
             instance: { $ref: "#/components/schemas/InstanceInfo" }
             database: { $ref: "#/components/schemas/ComponentStatus" }
             rewardStream: { $ref: "#/components/schemas/ComponentStatus" }
+    PointQuerySystemInfoResponse:
+      type: object
+      properties:
+        code: { type: string }
+        data:
+          type: object
+          required: [instance, database]
+          properties:
+            instance: { $ref: "#/components/schemas/InstanceInfo" }
+            database: { $ref: "#/components/schemas/ComponentStatus" }
     EventSystemInfoResponse:
       type: object
       properties:
